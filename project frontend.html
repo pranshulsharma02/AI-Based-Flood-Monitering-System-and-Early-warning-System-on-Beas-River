@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>REAL TIME FLOOD MONITORING SYSTEM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #0f5a8a;
+      --secondary: #e8591c;
+      --success: #2d8659;
+      --warning: #d97706;
+      --danger: #c1272d;
+      --neutral-50: #fafbfc;
+      --neutral-100: #f3f4f6;
+      --neutral-200: #e5e7eb;
+      --neutral-300: #d1d5db;
+      --neutral-400: #9ca3af;
+      --neutral-600: #4b5563;
+      --neutral-900: #111827;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 32px rgba(0,0,0,0.1);
+      --shadow-xl: 0 20px 48px rgba(0,0,0,0.12);
+    }
+
+    body {
+      font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--neutral-50);
+      color: var(--neutral-900);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ──────── HEADER ──────── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo-placeholder {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary) 0%, #0a3a5a 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: white;
+      font-weight: 700;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .topbar-brand span {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--neutral-900);
+    }
+
+    .topbar-right {
+      font-size: 12px;
+      color: var(--neutral-600);
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 500;
+    }
+
+    #liveClock {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* ──────── SUBNAV ──────── */
+    .subnav {
+      background: var(--surface);
+      display: flex;
+      padding: 0 32px;
+      border-bottom: 1px solid var(--border);
+      gap: 0;
+    }
+
+    .subnav a {
+      color: var(--neutral-600);
+      text-decoration: none;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      display: block;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .subnav a:hover {
+      color: var(--primary);
+    }
+
+    .subnav a.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* ──────── ALERT BANNER ──────── */
+    .alert-strip {
+      background: linear-gradient(135deg, #fff5e6 0%, #fffcf5 100%);
+      border-left: 3px solid var(--secondary);
+      padding: 12px 32px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--neutral-900);
+    }
+
+    .alert-strip.danger {
+      background: linear-gradient(135deg, #fff5f5 0%, #fffcfc 100%);
+      border-left-color: var(--danger);
+    }
+
+    .alert-strip .badge {
+      background: var(--secondary);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+
+    .alert-strip.danger .badge {
+      background: var(--danger);
+    }
+
+    /* ──────── CONTAINER ──────── */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    /* ──────── SECTION TITLE ──────── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--neutral-600);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 16px;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    /* ──────── STAT CARDS ──────── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card.warn::before { background: var(--warning); }
+    .stat-card.danger::before { background: var(--danger); }
+    .stat-card.ok::before { background: var(--success); }
+
+    .stat-card:hover {
+      border-color: var(--neutral-300);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--neutral-600);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--neutral-900);
+      line-height: 1;
+      letter-spacing: -0.5px;
+    }
+
+    .stat-unit {
+      font-size: 12px;
+      color: var(--neutral-600);
+      font-weight: 500;
+      margin-left: 4px;
+    }
+
+    .stat-sub {
+      font-size: 12px;
+      color: var(--neutral-600);
+      margin-top: 8px;
+    }
+
+    .stat-change {
+      font-size: 12px;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    .stat-change.up { color: var(--danger); }
+    .stat-change.down { color: var(--success); }
+    .stat-change.same { color: var(--warning); }
+
+    /* ──────── LAYOUT ──────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 1024px) {
+      .three-col { grid-template-columns: 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ──────── CARD ──────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-header {
+      background: linear-gradient(to right, var(--neutral-50), var(--neutral-100));
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--neutral-900);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* ──────── TABLE ──────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: var(--neutral-50);
+      color: var(--neutral-700);
+      font-weight: 600;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    tbody tr {
+      transition: background-color 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: var(--neutral-50);
+    }
+
+    tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--neutral-900);
+    }
+
+    /* ──────── BADGES ──────── */
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+    }
+
+    .badge-normal {
+      background: linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%);
+      color: #166534;
+      border: 1px solid #dcfce7;
+    }
+
+    .badge-rising {
+      background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+      color: #b45309;
+      border: 1px solid #fde68a;
+    }
+
+    .badge-alert {
+      background: linear-gradient(135deg, #fee2e2 0%, #fff5f5 100%);
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .badge-offline {
+      background: var(--neutral-100);
+      color: var(--neutral-700);
+      border: 1px solid var(--neutral-200);
+    }
+
+    /* ──────── PROGRESS BARS ──────── */
+    .sensor-bar-wrap {
+      margin-bottom: 20px;
+    }
+
+    .sensor-bar-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--neutral-700);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .sensor-bar-outer {
+      background: var(--neutral-100);
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .sensor-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+      border-radius: 4px;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.2);
+    }
+
+    .sensor-bar-inner.bar-orange {
+      background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+    }
+
+    .sensor-bar-inner.bar-green {
+      background: linear-gradient(90deg, #16a34a 0%, #15803d 100%);
+    }
+
+    .sensor-bar-value {
+      font-size: 11px;
+      color: var(--neutral-600);
+      margin-top: 4px;
+      font-weight: 500;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ──────── RISK METER ──────── */
+    .risk-meter {
+      position: relative;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .risk-score-display {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .risk-gauge-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 180deg,
+        #16a34a 0deg,
+        #16a34a 72deg,
+        #f59e0b 72deg,
+        #f59e0b 180deg,
+        #dc2626 180deg,
+        #dc2626 360deg
+      );
+      padding: 4px;
+    }
+
+    .risk-gauge-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .risk-score-num {
+      font-size: 56px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -2px;
+    }
+
+    .risk-score-num.moderate { color: var(--warning); }
+    .risk-score-num.high { color: var(--danger); }
+
+    .risk-label {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+      color: var(--neutral-700);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .risk-segments {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      justify-content: center;
+    }
+
+    .risk-segment {
+      width: 24px;
+      height: 4px;
+      background: var(--neutral-200);
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .risk-segment.active {
+      height: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* ──────── EVENT LOG ──────── */
+    #eventLog {
+      list-style: none;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    #eventLog li {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    #eventLog li:last-child {
+      border-bottom: none;
+    }
+
+    .event-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    }
+
+    .event-dot.dot-r { background: #dc2626; }
+    .event-dot.dot-o { background: #f97316; }
+    .event-dot.dot-b { background: #0f5a8a; }
+    .event-dot.dot-g { background: #16a34a; }
+
+    .event-time {
+      color: var(--neutral-500);
+      font-size: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      margin-top: 2px;
+    }
+
+    /* ──────── CANVAS MAP ──────── */
+    #mapCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
+
+    /* ──────── FORM ──────── */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--neutral-700);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      background: var(--neutral-50);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      background: var(--surface);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 90, 138, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* ──────── BUTTONS ──────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .btn:hover {
+      background: #0d4a75;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: var(--neutral-200);
+      color: var(--neutral-900);
+    }
+
+    .btn-secondary:hover {
+      background: var(--neutral-300);
+    }
+
+    /* ──────── SUCCESS MESSAGE ──────── */
+    #reportSuccess {
+      display: none;
+      background: linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%);
+      border: 1px solid #dcfce7;
+      border-left: 3px solid #16a34a;
+      padding: 12px 16px;
+      border-radius: 6px;
+      color: #166534;
+      font-size: 12px;
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+
+    /* ──────── SCROLLBAR ──────── */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--neutral-100);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--neutral-300);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--neutral-400);
+    }
+
+    /* ──────── RESPONSIVE ──────── */
+    @media (max-width: 768px) {
+      .container { padding: 16px; }
+      .topbar { padding: 0 16px; }
+      .subnav { padding: 0 16px; }
+      .alert-strip { padding: 10px 16px; }
+      .stat-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-logo-placeholder">🌊</div>
+    <span>Beas Flood Intelligence</span>
+  </div>
+  <div class="topbar-right">
+    <span id="liveClock">00:00:00</span> IST
+  </div>
+</div>
+
+<!-- SUBNAV -->
+<div class="subnav">
+  <a href="#" class="active">Intelligence</a>
+  <a href="#">Forecasts</a>
+  <a href="#">Data Sources</a>
+  <a href="#">Risk Analysis</a>
+  <a href="#">Documentation</a>
+</div>
+
+<!-- ALERTS -->
+<div class="alert-strip">
+  <div class="badge">DATA AGGREGATION</div>
+  <span>Intelligence derived from IMD weather forecasts and hydrological data. Updated every 2 minutes.</span>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- KPI CARDS -->
+  <div class="section-title">Current Analysis</div>
+  <div class="stat-row">
+    <div class="stat-card warn">
+      <div class="stat-label">Forecasted Water Level</div>
+      <div><span class="stat-value">8.4</span><span class="stat-unit">m</span></div>
+      <div class="stat-sub">Next 24 hours estimate</div>
+      <div class="stat-change up">↑ Rising trend</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="stat-label">IMD Rainfall Forecast</div>
+      <div><span class="stat-value">18.2</span><span class="stat-unit">mm/h</span></div>
+      <div class="stat-sub">Predicted intensity</div>
+      <div class="stat-change up">↑ Increasing</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Estimated Discharge</div>
+      <div><span class="stat-value">1180</span><span class="stat-unit">m³/s</span></div>
+      <div class="stat-sub">Calculated from rainfall</div>
+      <div class="stat-change same">→ Moderate</div>
+    </div>
+    <div class="stat-card ok">
+      <div class="stat-label">Atmospheric Moisture</div>
+      <div><span class="stat-value">87</span><span class="stat-unit">%</span></div>
+      <div class="stat-sub">IMD data</div>
+      <div class="stat-change down">↓ Stable</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="three-col">
+    <!-- LEFT: MAP + SENSORS -->
+    <div>
+      <!-- MAP -->
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-header">Basin Analysis Map</div>
+        <div class="card-body">
+          <canvas id="mapCanvas" style="height: 280px;"></canvas>
+        </div>
+      </div>
+
+      <!-- AGGREGATED DATA -->
+      <div class="card">
+        <div class="card-header">Aggregated Parameters</div>
+        <div class="card-body">
+          <div class="sensor-bar-wrap">
+            <div class="sensor-bar-label">Water Level Forecast (m)</div>
+            <div class="sensor-bar-outer"><div id="bar-wl" class="sensor-bar-inner"></div></div>
+            <div class="sensor-bar-value" id="sv-wl">0.0 m</div>
+          </div>
+          <div class="sensor-bar-wrap">
+            <div class="sensor-bar-label">IMD Rainfall (mm/h)</div>
+            <div class="sensor-bar-outer"><div id="bar-rf" class="sensor-bar-inner"></div></div>
+            <div class="sensor-bar-value" id="sv-rf">0.0 mm/h</div>
+          </div>
+          <div class="sensor-bar-wrap">
+            <div class="sensor-bar-label">Calculated Discharge (m³/s)</div>
+            <div class="sensor-bar-outer"><div id="bar-fl" class="sensor-bar-inner"></div></div>
+            <div class="sensor-bar-value" id="sv-fl">0 m³/s</div>
+          </div>
+          <div class="sensor-bar-wrap">
+            <div class="sensor-bar-label">Soil Moisture Index (%)</div>
+            <div class="sensor-bar-outer"><div id="bar-hm" class="sensor-bar-inner bar-green"></div></div>
+            <div class="sensor-bar-value" id="sv-hm">0 %</div>
+          </div>
+          <div class="sensor-bar-wrap" style="margin-bottom: 0;">
+            <div class="sensor-bar-label">Wind Speed Forecast (km/h)</div>
+            <div class="sensor-bar-outer"><div id="bar-ws" class="sensor-bar-inner"></div></div>
+            <div class="sensor-bar-value" id="sv-ws">0 km/h</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RISK METER + LOG -->
+    <div>
+      <!-- RISK ASSESSMENT -->
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-header">Risk Assessment</div>
+        <div class="card-body">
+          <div class="risk-meter">
+            <div class="risk-score-display">
+              <div class="risk-gauge-ring">
+                <div class="risk-gauge-inner">
+                  <div class="risk-score-num" id="riskNum">42</div>
+                </div>
+              </div>
+            </div>
+            <div class="risk-label" id="riskText">Moderate</div>
+            <div class="risk-segments">
+              <div id="seg1" class="risk-segment"></div>
+              <div id="seg2" class="risk-segment"></div>
+              <div id="seg3" class="risk-segment"></div>
+              <div id="seg4" class="risk-segment"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY LOG -->
+      <div class="card">
+        <div class="card-header">Activity Log</div>
+        <div class="card-body">
+          <ul id="eventLog"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERTS RULES -->
+  <div class="section-title" style="margin-top: 32px;">Monitoring Rules</div>
+  <div class="card" style="margin-bottom: 32px;">
+    <div class="card-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Threshold</th>
+            <th>Current</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="rulesBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- STATION DATA -->
+  <div class="section-title">Station Readings</div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">Water Level by Station</div>
+      <div class="card-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Station</th>
+              <th>Water Level (m)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Manali (Upstream)</td>
+              <td><strong id="st-manali">0.0</strong></td>
+            </tr>
+            <tr>
+              <td>Kullu</td>
+              <td><strong id="st-kullu">0.0</strong></td>
+            </tr>
+            <tr>
+              <td>Bhuntar (Primary)</td>
+              <td><strong id="st-bhuntar">0.0</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Flow Rate by Station</div>
+      <div class="card-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Station</th>
+              <th>Flow Rate (m³/s)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Bhuntar</td>
+              <td><strong id="st-bhuntar-fl">0</strong></td>
+            </tr>
+            <tr>
+              <td>Avg. 24hr</td>
+              <td><strong id="sc-rf24">0</strong></td>
+            </tr>
+            <tr>
+              <td>Peak Today</td>
+              <td><strong id="sc-fl24">0</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY TABLE -->
+  <div class="section-title">Data History</div>
+  <div class="card" style="margin-bottom: 32px;">
+    <div class="card-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>WL (m)</th>
+            <th>RF (mm/h)</th>
+            <th>FL (m³/s)</th>
+            <th>HM (%)</th>
+            <th>Temp (°C)</th>
+            <th>Risk</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- INCIDENT REPORTING -->
+  <div class="section-title">Report an Incident</div>
+  <div class="card" style="margin-bottom: 32px;">
+    <div class="card-body">
+      <div id="reportSuccess"></div>
+      <div class="form-group">
+        <label for="f-type">Incident Type</label>
+        <select id="f-type">
+          <option value="">Select...</option>
+          <option>Flooding</option>
+          <option>Infrastructure Damage</option>
+          <option>Debris</option>
+          <option>Landslide</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="f-loc">Location</label>
+        <input type="text" id="f-loc" placeholder="e.g., near Bhuntar bridge">
+      </div>
+      <div class="form-group">
+        <label for="f-sev">Severity</label>
+        <select id="f-sev">
+          <option value="Low">Low</option>
+          <option value="Moderate">Moderate</option>
+          <option value="High">High</option>
+          <option value="Critical">Critical</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="f-desc">Description</label>
+        <textarea id="f-desc" placeholder="Describe the incident in detail..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="f-name">Your Name</label>
+        <input type="text" id="f-name" placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label for="f-phone">Contact Number</label>
+        <input type="tel" id="f-phone" placeholder="+91 ...">
+      </div>
+      <button class="btn" onclick="submitReport()">Submit Report</button>
+    </div>
+  </div>
+
+  <!-- DATA SOURCES -->
+  <div class="section-title">Data Sources & APIs</div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">Primary Data Sources</div>
+      <div class="card-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Data Type</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>IMD Weather API</strong></td>
+              <td>Rainfall, Forecasts</td>
+              <td><span class="badge-status badge-normal">✓ Active</span></td>
+            </tr>
+            <tr>
+              <td><strong>CGWAS (India Water)</strong></td>
+              <td>Water Level Data</td>
+              <td><span class="badge-status badge-normal">✓ Active</span></td>
+            </tr>
+            <tr>
+              <td><strong>Field Reports</strong></td>
+              <td>Ground Observations</td>
+              <td><span class="badge-status badge-normal">✓ Active</span></td>
+            </tr>
+            <tr>
+              <td><strong>GDACS</strong></td>
+              <td>Hazard Monitoring</td>
+              <td><span class="badge-status badge-normal">✓ Active</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Technology Stack</div>
+      <div class="card-body" style="font-size: 13px; line-height: 1.8;">
+        <div style="margin-bottom: 12px;">
+          <div style="font-weight: 600; color: var(--primary); margin-bottom: 4px;">Backend</div>
+          <div style="color: var(--neutral-600);">Python, Flask, REST APIs</div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="font-weight: 600; color: var(--primary); margin-bottom: 4px;">Frontend</div>
+          <div style="color: var(--neutral-600);">HTML5, CSS3, Vanilla JavaScript</div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="font-weight: 600; color: var(--primary); margin-bottom: 4px;">Data Integration</div>
+          <div style="color: var(--neutral-600);">API aggregation, Real-time processing</div>
+        </div>
+        <div>
+          <div style="font-weight: 600; color: var(--primary); margin-bottom: 4px;">Deployment</div>
+          <div style="color: var(--neutral-600);">Cloud-ready, Scalable architecture</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ─── LIVE CLOCK ───
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ─── SENSOR DATA ───
+  let wl = 8.4, rf = 18.2, fl = 1180, hm = 87, ws = 24, riskVal = 42;
+
+  function updateData() {
+    wl = Math.max(6.5, Math.min(12, wl + (Math.random()-0.48)*0.2));
+    rf = Math.max(8, Math.min(50, rf + (Math.random()-0.5)*2));
+    fl = Math.max(900, Math.min(1800, fl + (Math.random()-0.5)*60));
+    hm = Math.max(60, Math.min(98, hm + (Math.random()-0.5)*3));
+    ws = Math.max(10, Math.min(80, ws + (Math.random()-0.5)*4));
+
+    riskVal = Math.round(((wl/11.8)*0.35 + (rf/50)*0.3 + (hm/100)*0.15 + 0.8*0.2)*100);
+    riskVal = Math.max(0, Math.min(100, riskVal));
+
+    document.getElementById('sc-fl24').textContent = (fl * 1.2).toFixed(0);
+    document.getElementById('sc-rf24').textContent = (rf * 24).toFixed(0);
+
+    setBar('wl', wl, 14, 'bar-orange', wl.toFixed(1)+' m');
+    setBar('rf', rf, 60, 'bar-blue', rf.toFixed(1)+' mm/h');
+    setBar('fl', fl, 2000, 'bar-blue', Math.round(fl)+' m³/s');
+    setBar('hm', hm, 100, 'bar-green', Math.round(hm)+' %');
+    setBar('ws', ws, 80, 'bar-blue', Math.round(ws)+' km/h');
+
+    document.getElementById('st-manali').textContent = (wl-2.6).toFixed(1);
+    document.getElementById('st-kullu').textContent  = (wl-1.3).toFixed(1);
+    document.getElementById('st-bhuntar').textContent= wl.toFixed(1);
+    document.getElementById('st-bhuntar-fl').textContent= Math.round(fl);
+
+    const rEl = document.getElementById('riskNum');
+    const tEl = document.getElementById('riskText');
+    rEl.textContent = riskVal;
+    let lvl,col;
+    if(riskVal<30){lvl='Low';col='#0f5a8a';rEl.className='risk-score-num';}
+    else if(riskVal<55){lvl='Moderate';col='#d97706';rEl.className='risk-score-num moderate';}
+    else if(riskVal<78){lvl='High';col='#c1272d';rEl.className='risk-score-num high';}
+    else{lvl='Extreme';col='#991b1b';rEl.className='risk-score-num high';}
+    tEl.textContent = lvl; tEl.style.color = col;
+    ['seg1','seg2','seg3','seg4'].forEach((id,i) => {
+      document.getElementById(id).classList.toggle('active',
+        (riskVal<30&&i===0)||(riskVal>=30&&riskVal<55&&i<=1)||(riskVal>=55&&riskVal<78&&i<=2)||(riskVal>=78&&i<=3));
+    });
+
+    updateRules();
+    pushEventMaybe();
+  }
+
+  function setBar(key, val, max, cls, label) {
+    const pct = Math.min(100, (val/max)*100);
+    const bar = document.getElementById('bar-'+key);
+    bar.style.width = pct+'%';
+    bar.className = 'sensor-bar-inner '+cls;
+    if(pct>70) bar.style.background = '#c1272d';
+    else if(pct>50) bar.style.background = '#d97706';
+    else bar.style.background = '';
+    document.getElementById('sv-'+key).textContent = label;
+  }
+
+  // ─── RULES ───
+  const rules = [
+    {name:'Rainfall Rate',  threshold:'> 10 mm/hr',   getValue:()=>rf,  limit:10,  unit:'mm/hr', fmt: v=>v.toFixed(1)},
+    {name:'Water Level',    threshold:'> 7 m',        getValue:()=>wl,  limit:7,   unit:'m',      fmt: v=>v.toFixed(1)},
+    {name:'Water Level',    threshold:'> 10 m (evac)',getValue:()=>wl,  limit:10,  unit:'m',      fmt: v=>v.toFixed(1)},
+    {name:'Flow Rate',      threshold:'> 1000 m³/s',  getValue:()=>fl,  limit:1000,unit:'m³/s',   fmt: v=>Math.round(v)},
+    {name:'Humidity',       threshold:'> 85%',        getValue:()=>hm,  limit:85,  unit:'%',      fmt: v=>Math.round(v)},
+  ];
+  function updateRules() {
+    const tb = document.getElementById('rulesBody');
+    tb.innerHTML = rules.map(r => {
+      const v = r.getValue();
+      const triggered = v > r.limit;
+      return `<tr>
+        <td><strong>${r.name}</strong></td>
+        <td>${r.threshold}</td>
+        <td>${r.fmt(v)} ${r.unit}</td>
+        <td><span class="badge-status ${triggered?'badge-alert':'badge-normal'}">${triggered?'⚠ TRIGGERED':'✓ OK'}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ─── EVENTS ───
+  const eventMessages = [
+    {dot:'dot-b', msg:'IMD weather data synchronized'},
+    {dot:'dot-o', msg:'Risk assessment recalculated'},
+    {dot:'dot-b', msg:'Hydrological data updated'},
+    {dot:'dot-o', msg:'Forecast models refreshed'},
+    {dot:'dot-b', msg:'API data sources operational'},
+    {dot:'dot-g', msg:'Intelligence platform synchronized'},
+  ];
+  let eidx = 0;
+  function pushEventMaybe() {
+    if(Math.random()>0.35) return;
+    const log = document.getElementById('eventLog');
+    const e = eventMessages[eidx % eventMessages.length]; eidx++;
+    const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false})+' IST';
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="event-dot ${e.dot}"></div><div><div>${e.msg}</div><div class="event-time">${now}</div></div>`;
+    log.insertBefore(li, log.firstChild);
+    if(log.children.length>12) log.removeChild(log.lastChild);
+  }
+
+  setInterval(updateData, 3000);
+
+  // ─── MAP ───
+  function drawMap() {
+    const canvas = document.getElementById('mapCanvas');
+    const parent = canvas.parentElement;
+    canvas.width  = parent.clientWidth  || 700;
+    canvas.height = parent.clientHeight || 280;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const bg = ctx.createLinearGradient(0,0,W,H);
+    bg.addColorStop(0,'#e8f4f8'); bg.addColorStop(1,'#d4e9f2');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle='rgba(150,190,160,0.35)'; ctx.lineWidth=1;
+    for(let i=0;i<8;i++){
+      ctx.beginPath();
+      const yb=30+i*28;
+      ctx.moveTo(0,yb);
+      for(let x=0;x<W;x+=8) ctx.lineTo(x,yb+Math.sin(x*0.03+i)*18+Math.sin(x*0.07+i*2)*8);
+      ctx.stroke();
+    }
+
+    ctx.save();
+    ctx.shadowColor='rgba(15,90,138,0.25)'; ctx.shadowBlur=12;
+    const rg=ctx.createLinearGradient(W*.12,0,W*.88,H);
+    rg.addColorStop(0,'rgba(15,90,138,0.75)'); rg.addColorStop(1,'rgba(10,58,90,0.65)');
+    ctx.beginPath();
+    ctx.moveTo(W*.12,H*.06);
+    ctx.bezierCurveTo(W*.2,H*.16,W*.18,H*.24,W*.28,H*.3);
+    ctx.bezierCurveTo(W*.38,H*.36,W*.4,H*.44,W*.48,H*.5);
+    ctx.bezierCurveTo(W*.56,H*.56,W*.6,H*.64,W*.66,H*.7);
+    ctx.bezierCurveTo(W*.72,H*.76,W*.82,H*.8,W*.9,H*.9);
+    ctx.lineWidth=12; ctx.strokeStyle=rg; ctx.lineCap='round'; ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.beginPath();
+    ctx.moveTo(W*.12,H*.06);
+    ctx.bezierCurveTo(W*.2,H*.16,W*.18,H*.24,W*.28,H*.3);
+    ctx.bezierCurveTo(W*.38,H*.36,W*.4,H*.44,W*.48,H*.5);
+    ctx.bezierCurveTo(W*.56,H*.56,W*.6,H*.64,W*.66,H*.7);
+    ctx.bezierCurveTo(W*.72,H*.76,W*.82,H*.8,W*.9,H*.9);
+    ctx.lineWidth=3; ctx.strokeStyle='rgba(100,180,255,0.4)'; ctx.stroke();
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.moveTo(W*.08,H*.33);
+    ctx.bezierCurveTo(W*.18,H*.36,W*.3,H*.4,W*.41,H*.46);
+    ctx.lineWidth=4; ctx.strokeStyle='rgba(15,90,138,0.35)'; ctx.stroke();
+
+    const stations=[
+      {x:W*.14,y:H*.08,col:'#c1272d',lbl:'Manali'},
+      {x:W*.3,y:H*.24,col:'#d97706',lbl:'Kullu'},
+      {x:W*.22,y:H*.38,col:'#2d8659',lbl:'Banjar'},
+      {x:W*.5,y:H*.46,col:'#0f5a8a',lbl:'Bhuntar ★'},
+      {x:W*.68,y:H*.68,col:'#2d8659',lbl:'Mandi'},
+    ];
+    stations.forEach(s=>{
+      ctx.save();
+      ctx.shadowColor=s.col; ctx.shadowBlur=8;
+      ctx.beginPath(); ctx.arc(s.x,s.y,6,0,Math.PI*2);
+      ctx.fillStyle=s.col; ctx.fill();
+      ctx.strokeStyle='white'; ctx.lineWidth=2.5; ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle='rgba(0,0,0,0.75)';
+      ctx.fillRect(s.x+10,s.y-10,s.lbl.length*6.5+8,18);
+      ctx.fillStyle='white'; ctx.font='500 10px Sora';
+      ctx.fillText(s.lbl,s.x+14,s.y+1);
+    });
+
+    ctx.save(); ctx.translate(W*.4,H*.38); ctx.rotate(-0.45);
+    ctx.fillStyle='rgba(255,255,255,0.65)'; ctx.font='600 11px Sora';
+    ctx.fillText('BEAS RIVER',0,0); ctx.restore();
+  }
+
+  // ─── HISTORY ───
+  const historyData=[];
+  function buildHistoryTable() {
+    if(historyData.length===0) {
+      for(let i=9;i>=0;i--) {
+        const d=new Date(); d.setMinutes(d.getMinutes()-i*30);
+        const wlv=parseFloat((8.4-i*0.08+Math.random()*0.3).toFixed(1));
+        const rfv=parseFloat((18+i*0.5+Math.random()*5).toFixed(1));
+        const flv=Math.round(1200-i*30+Math.random()*80);
+        const hmv=Math.round(87+Math.random()*5-2);
+        const tv=parseFloat((14+Math.random()*2-1).toFixed(1));
+        const rs=Math.round(((wlv/11.8)*0.35+(rfv/50)*0.3+(hmv/100)*0.15+0.8*0.2)*100);
+        let rLabel='';
+        if(rs<30) rLabel='<span class="badge-status badge-normal">Low</span>';
+        else if(rs<55) rLabel='<span class="badge-status badge-rising">Moderate</span>';
+        else rLabel='<span class="badge-status badge-alert">High</span>';
+        historyData.push({time:d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false})+' IST',wl:wlv,rf:rfv,fl:flv,hm:hmv,t:tv,rs:rLabel});
+      }
+    }
+    document.getElementById('historyBody').innerHTML=historyData.map(r=>
+      `<tr><td>${r.time}</td><td>${r.wl}</td><td>${r.rf}</td><td>${r.fl}</td><td>${r.hm}</td><td>${r.t}</td><td>${r.rs}</td></tr>`
+    ).join('');
+  }
+
+  // ─── FORM ───
+  let incRef=1002;
+  function submitReport() {
+    const type=document.getElementById('f-type').value;
+    const loc =document.getElementById('f-loc').value.trim();
+    if(!type||!loc){alert('Please fill in Incident Type and Location.');return;}
+    const sev =document.getElementById('f-sev').value||'Not specified';
+    const ref =incRef++;
+    const now =new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false})+' IST';
+    const msg=document.getElementById('reportSuccess');
+    msg.textContent=`✓ Report #${ref} submitted. Reference: INC-${ref}. Our team will respond shortly.`;
+    msg.style.display='block';
+    const tb=document.getElementById('incidentHistory');
+    const sevMap={Low:'badge-normal',Moderate:'badge-rising',High:'badge-alert',Critical:'badge-alert','Not specified':'badge-offline'};
+    ['f-type','f-loc','f-sev','f-desc','f-name','f-phone'].forEach(id=>document.getElementById(id).value='');
+    setTimeout(()=>msg.style.display='none',5000);
+  }
+
+  // ─── INIT ───
+  updateData();
+  buildHistoryTable();
+  drawMap();
+  window.addEventListener('resize', drawMap);
+</script>
+
+</body>
+</html>
